@@ -15,10 +15,12 @@ import json
 import xbmcaddon
 
 # AEL main imports
-from ael import constants
+from ael import constants, settings
 from ael.utils import kodilogging, io, kodi
+from ael.launchers import ExecutionSettings, get_executor_factory
 
 # Local modules
+from resources.lib.launcher import SteamLauncher
 
 kodilogging.config() 
 logger = logging.getLogger(__name__)
@@ -59,41 +61,126 @@ def run_plugin():
         logger.error('Exception in plugin', exc_info=ex)
         kodi.dialog_OK(text=parser.usage)
         return
-        
-    if args.type == constants.AddonType.SCRAPER.name and args.cmd == 'scrape': run_scraper(args)
+    
+    if   args.type == constants.AddonType.LAUNCHER.name and args.cmd == 'launch': launch_rom(args)
+    elif args.type == constants.AddonType.LAUNCHER.name and args.cmd == 'configure': configure_launcher(args)
+    elif args.type == constants.AddonType.SCANNER.name  and args.cmd == 'scan': scan_for_roms(args)
+    elif args.type == constants.AddonType.SCANNER.name  and args.cmd == 'configure': configure_scanner(args)
     else:
         kodi.dialog_OK(text=parser.format_help())
-        
+    
     logger.debug('Advanced Emulator Launcher Plugin: Steam Library -> exit')
 
 # ---------------------------------------------------------------------------------------------
-# Scraper methods.
+# Launcher methods.
 # ---------------------------------------------------------------------------------------------
-def run_scraper(args):
-    logger.debug('========== run_scraper() BEGIN ==================================================')
-    pdialog             = kodi.ProgressDialog()
+# Arguments: --ael_addon_id --rom_id
+def launch_rom(args):
+    logger.debug('Steam Library Launcher: Starting ...')
     
-    settings            = ScraperSettings.from_settings_dict(args.settings)
-    scraper_strategy    = ScrapeStrategy(
-                            args.server_host, 
-                            args.server_port, 
-                            settings, 
-                            TheGamesDB(), 
-                            pdialog)
-                        
-    if args.rom_id is not None:
-        scraped_rom = scraper_strategy.process_single_rom(args.rom_id)
-        pdialog.endProgress()
-        pdialog.startProgress('Saving ROM in database ...')
-        scraper_strategy.store_scraped_rom(args.ael_addon_id, args.rom_id, scraped_rom)
-        pdialog.endProgress()
+    try:
+        execution_settings = ExecutionSettings()
+        execution_settings.delay_tempo              = settings.getSettingAsInt('delay_tempo')
+        execution_settings.display_launcher_notify  = settings.getSettingAsBool('display_launcher_notify')
+        execution_settings.is_non_blocking          = settings.getSettingAsBool('is_non_blocking')
+        execution_settings.media_state_action       = settings.getSettingAsInt('media_state_action')
+        execution_settings.suspend_audio_engine     = settings.getSettingAsBool('suspend_audio_engine')
+        execution_settings.suspend_screensaver      = settings.getSettingAsBool('suspend_screensaver')
+                
+        addon_dir = kodi.getAddonDir()
+        report_path = addon_dir.pjoin('reports')
+        if not report_path.exists(): report_path.makedirs()    
+        report_path = report_path.pjoin('{}-{}.txt'.format(args.ael_addon_id, args.rom_id))
         
-    if args.romcollection_id is not None:
-        scraped_roms = scraper_strategy.process_collection(args.romcollection_id)
-        pdialog.endProgress()
-        pdialog.startProgress('Saving ROMs in database ...')
-        scraper_strategy.store_scraped_roms(args.ael_addon_id, args.romcollection_id, scraped_roms)
-        pdialog.endProgress()
+        executor_factory = get_executor_factory(report_path)
+        launcher = SteamLauncher(
+            args.ael_addon_id, 
+            args.romcollection_id, 
+            args.rom_id, 
+            args.server_host, 
+            args.server_port,
+            executor_factory, 
+            execution_settings)
+        
+        launcher.launch()
+    except Exception as e:
+        logger.error('Exception while executing ROM', exc_info=e)
+        kodi.notify_error('Failed to execute ROM')    
+
+# Arguments: --ael_addon_id --romcollection_id | --rom_id
+def configure_launcher(args):
+    logger.debug('Steam Library Launcher: Configuring ...')
+        
+    launcher = SteamLauncher(
+            args.ael_addon_id, 
+            args.romcollection_id, 
+            args.rom_id, 
+            args.server_host, 
+            args.server_port)
+    
+    if launcher.build():
+        launcher.store_settings()
+        return
+    
+    kodi.notify_warn('Cancelled creating launcher')
+
+# ---------------------------------------------------------------------------------------------
+# Scanner methods.
+# ---------------------------------------------------------------------------------------------
+# Arguments: --ael_addon_id --romcollection_id --server_host --server_port
+def scan_for_roms(args):
+    logger.debug('Steam Library scanner: Starting scan ...')
+    progress_dialog = kodi.ProgressDialog()
+
+    addon_dir = kodi.getAddonDir()
+    report_path = addon_dir.pjoin('reports')
+            
+    scanner = RomFolderScanner(
+        report_path, 
+        args.ael_addon_id,
+        args.romcollection_id,
+        args.server_host, 
+        args.server_port, 
+        progress_dialog)
+        
+    scanner.scan()
+    progress_dialog.endProgress()
+    
+    logger.debug('scan_for_roms(): Finished scanning')
+    
+    amount_dead = scanner.amount_of_dead_roms()
+    if amount_dead > 0:
+        logger.info('scan_for_roms(): {} roms marked as dead'.format(amount_dead))
+        scanner.remove_dead_roms()
+        
+    amount_scanned = scanner.amount_of_scanned_roms()
+    if amount_scanned == 0:
+        logger.info('scan_for_roms(): No roms scanned')
+    else:
+        logger.info('scan_for_roms(): {} roms scanned'.format(amount_scanned))
+        scanner.store_scanned_roms()
+        
+    kodi.notify('ROMs scanning done')
+
+# Arguments: --ael_addon_id (opt) --romcollection_id
+def configure_scanner(args):
+    logger.debug('Steam Library scanner: Configuring ...')    
+    addon_dir = kodi.getAddonDir()
+    report_path = addon_dir.pjoin('reports')
+    
+    scanner = RomFolderScanner(
+        report_path, 
+        args.ael_addon_id,
+        args.romcollection_id, 
+        args.server_host, 
+        args.server_port, 
+        kodi.ProgressDialog())
+    
+    if scanner.configure():
+        scanner.store_settings()
+        return
+    
+    kodi.notify_warn('Cancelled configuring scanner')
 
 # ---------------------------------------------------------------------------------------------
 # RUN
