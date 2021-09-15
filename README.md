@@ -1,2 +1,2 @@
 # script.ael.steam
-Steam Library scanner for AEL
+Steam Library scanner and launcher for AEL
