@@ -1,6 +1,6 @@
 # Kodi Media Center language file
-# Addon Name: Advanced Emulator Launcher : Default plugins
-# Addon id: script.ael.defaults
+# Addon Name: Advanced Emulator Launcher : Steam Library plugin
+# Addon id: script.ael.steam
 msgid ""
 msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -17,6 +17,10 @@ msgstr "settings.xml"
 
 msgctxt "#30011"
 msgid "Advanced"
+msgstr "settings.xml"
+
+msgctxt "#30012"
+msgid "General"
 msgstr "settings.xml"
 
 ############################
@@ -39,19 +43,7 @@ msgid "Suspend/resume Kodi screensaver"
 msgstr "settings.xml"
 
 msgctxt "#30125"
-msgid "Escape $rom$ quotes"
-msgstr "settings.xml"
-
-msgctxt "#30126"
-msgid "Disable LIRC (Linux only)"
-msgstr "settings.xml"
-
-msgctxt "#30127"
-msgid "Close file descriptors (Windows only)"
-msgstr "settings.xml"
-
-msgctxt "#30128"
-msgid "CD into aplication dir (Windows only)"
+msgid "Steam API key"
 msgstr "settings.xml"
 
 msgctxt "#30129"

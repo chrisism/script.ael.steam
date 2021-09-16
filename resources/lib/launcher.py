@@ -19,8 +19,7 @@ from __future__ import division
 import logging
 
 # --- AEL packages ---
-from ael import platforms
-from ael.utils import io, kodi
+from ael.utils import kodi
 from ael.launchers import LauncherABC
 
 logger = logging.getLogger(__name__)
@@ -46,18 +45,11 @@ class SteamLauncher(LauncherABC):
     # Creates a new launcher using a wizard of dialogs. Called by parent build() method.
     #
     def _builder_get_wizard(self, wizard):    
-
         wizard = kodi.WizardDialog_Dummy(wizard, 'application', 'Steam')
-        wizard = kodi.WizardDialog_Keyboard(wizard, 'steamid','Steam ID')
-
         return wizard
     
     def _editor_get_wizard(self, wizard):
-        wizard = kodi.WizardDialog_YesNo(wizard, 'change_app', 'Change application?', 'Set a different application? Currently "{}"'.format(self.launcher_settings['application']))
-        wizard = kodi.WizardDialog_FileBrowse(wizard, 'application', 'Select the launcher application', 1, self._builder_get_appbrowser_filter, 
-                                              None, self._builder_wants_to_change_app)
-        wizard = kodi.WizardDialog_Keyboard(wizard, 'args', 'Application arguments')
-        
+        wizard = kodi.WizardDialog_Dummy(wizard, 'application', 'Steam')   
         return wizard
             
     def _build_post_wizard_hook(self):

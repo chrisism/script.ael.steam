@@ -5,6 +5,7 @@
 # --- Python standard library ---
 from __future__ import unicode_literals
 from __future__ import division
+from resources.lib.scanner import SteamScanner
 
 import sys
 import argparse
@@ -135,7 +136,7 @@ def scan_for_roms(args):
     addon_dir = kodi.getAddonDir()
     report_path = addon_dir.pjoin('reports')
             
-    scanner = RomFolderScanner(
+    scanner = SteamScanner(
         report_path, 
         args.ael_addon_id,
         args.romcollection_id,
@@ -168,7 +169,7 @@ def configure_scanner(args):
     addon_dir = kodi.getAddonDir()
     report_path = addon_dir.pjoin('reports')
     
-    scanner = RomFolderScanner(
+    scanner = SteamScanner(
         report_path, 
         args.ael_addon_id,
         args.romcollection_id, 

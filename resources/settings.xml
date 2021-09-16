@@ -1,6 +1,20 @@
 ﻿<?xml version="1.0" ?>
 <settings version="1">
-    <section id="script.ael.defaults">
+    <section id="script.ael.steam">
+        <category id="ael_general" label="30012">
+			<group id="1">
+                <setting id="steam-api-key" type="string" label="30125" help="">
+                    <level>0</level>
+                    <default></default>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <control type="edit" format="string">
+                        <heading>30125</heading>
+                    </control>
+                </setting>
+            </group>
+        </category>
         <category id="ael_launching" label="30010">
 			<group id="1">
                 <setting id="media_state_action" type="enum" label="30121" help="">
@@ -37,26 +51,6 @@
                     <default>false</default>
                     <control type="toggle"/>
                 </setting>
-                <setting id="escape_romfile" type="boolean" label="30125" help="">
-                    <level>0</level>
-                    <default>false</default>
-                    <control type="toggle"/>
-                </setting>
-                <setting id="lirc_state" type="boolean" label="30126" help="">
-                    <level>0</level>
-                    <default>true</default>
-                    <control type="toggle"/>
-                </setting>
-                <setting id="windows_close_fds" type="boolean" label="30127" help="">
-                    <level>0</level>
-                    <default>true</default>
-                    <control type="toggle"/>
-                </setting>
-                <setting id="windows_cd_apppath" type="boolean" label="30128" help="">
-                    <level>0</level>
-                    <default>true</default>
-                    <control type="toggle"/>
-                </setting>
             </group>
         </category>
         <category id="ael_advanced" label="30011">
@@ -82,27 +76,15 @@
                 </setting>
                 <setting id="ael.plugin_types" type="string" label="AEL plugin type(s)" help="">
                     <level>4</level>
-                    <default>LAUNCHER|SCRAPER|SCANNER</default>
+                    <default>LAUNCHER|SCANNER</default>
                 </setting>
                 <setting id="ael.launcher.friendlyname" type="string" label="Launcher friendlyname" help="">
                     <level>4</level>
-                    <default>Application launcher</default>
+                    <default>Steam library launcher</default>
                 </setting>
                 <setting id="ael.scanner.friendlyname" type="string" label="Scanner friendlyname" help="">
                     <level>4</level>
-                    <default>Folder scanner</default>
-                </setting>
-                <setting id="ael.scraper.friendlyname" type="string" label="Scraper friendlyname" help="">
-                    <level>4</level>
-                    <default>Local files scraper</default>
-                </setting>
-                <setting id="ael.scraper.supported_metadata" type="string" label="Metadata supported by this scraper" help="">
-                    <level>4</level>
-                    <default>title|year|genre|developer|nplayers|esrb|plot</default>
-                </setting>
-                <setting id="ael.scraper.supported_assets" type="string" label="Assets supported by this scraper" help="">
-                    <level>4</level>
-                    <default>fanart|banner|snap|clearlogo|title|boxfront|boxback|3dbox|cartridge|flyer|map|manual|trailer</default>
+                    <default>Steam library scanner</default>
                 </setting>
             </group>
         </category>
