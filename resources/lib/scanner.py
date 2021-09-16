@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Advanced Emulator Launcher: Default scanner implementation
+# Advanced Emulator Launcher: Steam library scanner implementation
 #
 # Copyright (c) 2016-2018 Wintermute0110 <wintermute0110@gmail.com>
 #
@@ -64,7 +64,7 @@ class SteamScanner(RomScannerStrategy):
         addon_id = kodi.get_addon_id()
         return addon_id
     
-    def get_steam_id(self) -> bool:
+    def get_steam_id(self) -> str:
         return self.scanner_settings['steamid'] if 'steamid' in self.scanner_settings else None
     
     def _configure_get_wizard(self, wizard) -> kodi.WizardDialog:

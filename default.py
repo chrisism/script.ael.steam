@@ -5,7 +5,6 @@
 # --- Python standard library ---
 from __future__ import unicode_literals
 from __future__ import division
-from resources.lib.scanner import SteamScanner
 
 import sys
 import argparse
@@ -22,6 +21,7 @@ from ael.launchers import ExecutionSettings, get_executor_factory
 
 # Local modules
 from resources.lib.launcher import SteamLauncher
+from resources.lib.scanner import SteamScanner
 
 kodilogging.config() 
 logger = logging.getLogger(__name__)
