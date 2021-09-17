@@ -54,7 +54,10 @@ class SteamLauncher(LauncherABC):
             
     def _build_post_wizard_hook(self):
         return True
-    
+
+    def _builder_get_edit_options(self):
+        return None
+         
     # ---------------------------------------------------------------------------------------------
     # Execution methods
     # ---------------------------------------------------------------------------------------------

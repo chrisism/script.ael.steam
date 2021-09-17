@@ -19,6 +19,7 @@ from __future__ import division
 
 import logging
 import typing
+import collections
 
 # --- AEL packages ---
 from ael import report, settings, api
@@ -74,6 +75,21 @@ class SteamScanner(RomScannerStrategy):
     def _configure_post_wizard_hook(self):
         return True
             
+    def _configure_get_edit_options(self) -> dict:
+        options = collections.OrderedDict()
+        options[self._change_steam_id] = "Change Steam account ID: '{}'".format(self.scanner_settings['steamid'])
+        return options
+
+    def _change_steam_id(self):
+        steamid = self.scanner_settings['steamid']
+        steamid = kodi.dialog_keyboard('Edit Steam account ID', text=steamid)
+
+        if steamid is None: return
+        self.scanner_settings['steamid'] = steamid
+
+    # ---------------------------------------------------------------------------------------------
+    # Execution methods
+    # ---------------------------------------------------------------------------------------------         
     # ~~~ Scan for new files (*.*) and put them in a list ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def _getCandidates(self, launcher_report: report.Reporter) -> typing.List[ROMCandidateABC]:
         self.progress_dialog.startProgress('Reading Steam account...')
