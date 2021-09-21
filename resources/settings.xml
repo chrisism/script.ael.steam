@@ -80,11 +80,11 @@
                 </setting>
                 <setting id="ael.launcher.friendlyname" type="string" label="Launcher friendlyname" help="">
                     <level>4</level>
-                    <default>Steam library launcher</default>
+                    <default>Steam Library</default>
                 </setting>
                 <setting id="ael.scanner.friendlyname" type="string" label="Scanner friendlyname" help="">
                     <level>4</level>
-                    <default>Steam library scanner</default>
+                    <default>Steam Library</default>
                 </setting>
             </group>
         </category>
