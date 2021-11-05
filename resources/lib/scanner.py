@@ -39,6 +39,7 @@ class SteamCandidate(ROMCandidateABC):
         rom = api.ROMObj()
         rom.set_name(self.get_name())
         scanned_data = {
+            'identifier': self.get_app_id(),
             'steamid': self.get_app_id(),
             'steam_name': self.get_name() # so that we always have the original name
         }

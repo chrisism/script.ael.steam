@@ -1,6 +1,6 @@
 {
     "name": "script.ael.steam",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "scripts": {
         "build": "addon build",
         "build-alpha": "addon versioning --semver prerelease --tag alpha && npm run build",
