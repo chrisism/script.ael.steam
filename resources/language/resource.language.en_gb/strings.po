@@ -1,5 +1,5 @@
 # Kodi Media Center language file
-# Addon Name: Advanced Emulator Launcher : Steam Library plugin
+# Addon Name: Advanced Kodi Launcher : Steam Library plugin
 # Addon id: script.ael.steam
 msgid ""
 msgstr ""

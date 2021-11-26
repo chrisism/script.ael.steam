@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Advanced Emulator Launcher: Steam library scanner implementation
+# Advanced Kodi Launcher: Steam library scanner implementation
 #
 # Copyright (c) Chrisism <crizizz@gmail.com>
 #

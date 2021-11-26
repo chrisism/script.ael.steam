@@ -1,5 +1,5 @@
 #
-# Advanced Emulator Launcher: Steam library launcher implementation
+# Advanced Kodi Launcher: Steam library launcher implementation
 #
 # Copyright (c) Chrisism <crizizz@gmail.com>
 #
