@@ -13,9 +13,9 @@ logger = logging.getLogger(__name__)
 
 from resources.lib.scanner import SteamScanner
 
-from ael.api import ROMObj
-from ael import constants
-from ael.utils import net
+from akl.api import ROMObj
+from akl import constants
+from akl.utils import net
 
 def read_file(path):
     with open(path, 'r') as f:
@@ -38,8 +38,8 @@ class Test_romscannerstests(unittest.TestCase):
         print('TEST ASSETS DIR: {}'.format(cls.TEST_ASSETS_DIR))
         print('---------------------------------------------------------------------------')
     
-    @patch('ael.api.client_get_roms_in_collection')
-    @patch('ael.api.client_get_collection_scanner_settings')
+    @patch('akl.api.client_get_roms_in_collection')
+    @patch('akl.api.client_get_collection_scanner_settings')
     @patch('resources.lib.scanner.net.net_get_URL_original') 
     def test_when_scanning_your_steam_account_not_existing_dead_roms_will_be_correctly_removed(self, 
             mock_urlopen:MagicMock, api_settings_mock:MagicMock, api_roms_mock:MagicMock):

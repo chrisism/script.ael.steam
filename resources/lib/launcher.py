@@ -18,9 +18,9 @@ from __future__ import division
 
 import logging
 
-# --- AEL packages ---
-from ael.utils import kodi
-from ael.launchers import LauncherABC
+# --- AKL packages ---
+from akl.utils import kodi
+from akl.launchers import LauncherABC
 
 logger = logging.getLogger(__name__)
 

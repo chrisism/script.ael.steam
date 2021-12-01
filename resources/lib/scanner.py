@@ -21,11 +21,11 @@ import logging
 import typing
 import collections
 
-# --- AEL packages ---
-from ael import report, settings, api
-from ael.utils import kodi, net
+# --- AKL packages ---
+from akl import report, settings, api
+from akl.utils import kodi, net
 
-from ael.scanners import RomScannerStrategy, ROMCandidateABC
+from akl.scanners import RomScannerStrategy, ROMCandidateABC
 
 logger = logging.getLogger(__name__)
         
