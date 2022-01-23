@@ -70,7 +70,7 @@ class Test_romscannerstests(unittest.TestCase):
 
         # assert
         self.assertIsNotNone(target.scanned_roms)
-        self.assertEqual(expected, actual)
+        assert actual == expected
 
 if __name__ == '__main__':    
     unittest.main()
