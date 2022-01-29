@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 import json
 import logging
 
-from fakes import FakeProgressDialog, random_string, FakeFile
+from tests.fakes import FakeProgressDialog, random_string, FakeFile
 
 logging.basicConfig(format = '%(asctime)s %(module)s %(levelname)s: %(message)s',
                 datefmt = '%m/%d/%Y %I:%M:%S %p', level = logging.DEBUG)
@@ -14,14 +14,12 @@ logger = logging.getLogger(__name__)
 from resources.lib.scanner import SteamScanner
 
 from akl.api import ROMObj
-from akl import constants
-from akl.utils import net
 
 def read_file(path):
     with open(path, 'r') as f:
         return f.read()
     
-class Test_romscannerstests(unittest.TestCase):
+class Test_SteamScanner(unittest.TestCase):
     
     ROOT_DIR = ''
     TEST_DIR = ''
@@ -32,20 +30,15 @@ class Test_romscannerstests(unittest.TestCase):
         cls.TEST_DIR = os.path.dirname(os.path.abspath(__file__))
         cls.ROOT_DIR = os.path.abspath(os.path.join(cls.TEST_DIR, os.pardir))
         cls.TEST_ASSETS_DIR = os.path.abspath(os.path.join(cls.TEST_DIR,'assets/'))
-                
-        print('ROOT DIR: {}'.format(cls.ROOT_DIR))
-        print('TEST DIR: {}'.format(cls.TEST_DIR))
-        print('TEST ASSETS DIR: {}'.format(cls.TEST_ASSETS_DIR))
-        print('---------------------------------------------------------------------------')
     
     @patch('akl.api.client_get_roms_in_collection')
     @patch('akl.api.client_get_collection_scanner_settings')
-    @patch('resources.lib.scanner.net.net_get_URL_original') 
+    @patch('resources.lib.scanner.net.get_URL_as_json') 
     def test_when_scanning_your_steam_account_not_existing_dead_roms_will_be_correctly_removed(self, 
             mock_urlopen:MagicMock, api_settings_mock:MagicMock, api_roms_mock:MagicMock):
         # arrange
         scanner_id = random_string(5)
-        mock_urlopen.return_value = read_file(self.TEST_ASSETS_DIR + "\\steamresponse.json")
+        mock_urlopen.return_value = json.loads(read_file(self.TEST_ASSETS_DIR + "/steamresponse.json"))
 
         api_settings_mock.return_value = {
             'steam-api-key': 'ABC123', #'BA1B6D6926F84920F8035F95B9B3E824'
