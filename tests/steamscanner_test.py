@@ -33,12 +33,12 @@ class Test_SteamScanner(unittest.TestCase):
     
     @patch('akl.api.client_get_roms_in_collection')
     @patch('akl.api.client_get_collection_scanner_settings')
-    @patch('resources.lib.scanner.net.get_URL_as_json') 
+    @patch('resources.lib.scanner.net.get_URL') 
     def test_when_scanning_your_steam_account_not_existing_dead_roms_will_be_correctly_removed(self, 
             mock_urlopen:MagicMock, api_settings_mock:MagicMock, api_roms_mock:MagicMock):
         # arrange
         scanner_id = random_string(5)
-        mock_urlopen.return_value = json.loads(read_file(self.TEST_ASSETS_DIR + "/steamresponse.json"))
+        mock_urlopen.return_value = json.loads(read_file(self.TEST_ASSETS_DIR + "/steamresponse.json")), 200
 
         api_settings_mock.return_value = {
             'steam-api-key': 'ABC123', #'BA1B6D6926F84920F8035F95B9B3E824'
