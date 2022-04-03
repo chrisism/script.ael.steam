@@ -46,6 +46,10 @@ msgctxt "#30125"
 msgid "Steam API key"
 msgstr "settings.xml"
 
+msgctxt "#30126"
+msgid "Suspend/resume Kodi joystick engine"
+msgstr "settings.xml"
+
 msgctxt "#30129"
 msgid "Log level"
 msgstr "settings.xml"
