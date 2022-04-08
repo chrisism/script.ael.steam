@@ -24,6 +24,7 @@ import collections
 # --- AKL packages ---
 from akl import report, settings, api
 from akl.utils import kodi, net
+from akl.utils.net import ContentType
 
 from akl.scanners import RomScannerStrategy, ROMCandidateABC
 
@@ -101,9 +102,14 @@ class SteamScanner(RomScannerStrategy):
         url = 'http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={}&steamid={}&include_appinfo=1'.format(apikey, steamid)
         
         self.progress_dialog.updateProgress(70)
-        json_body = net.get_URL_as_json(url)
+        json_body, http_code = net.get_URL(url, content_type=ContentType.JSON)
         self.progress_dialog.updateProgress(80)
         
+        if http_code != 200:
+            logger.warning("Failure while retrieving json web data")
+            kodi.notify_warn("Failure retrieving web data")
+            return []
+
         games = json_body['response']['games']
         num_games = len(games)
         launcher_report.write('  Library scanner found {} games'.format(num_games))
