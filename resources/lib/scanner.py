@@ -20,6 +20,7 @@ from __future__ import division
 import logging
 import typing
 import collections
+import json
 
 # --- AKL packages ---
 from akl import report, settings, api
@@ -42,7 +43,10 @@ class SteamCandidate(ROMCandidateABC):
         scanned_data = {
             'identifier': self.get_app_id(),
             'steamid': self.get_app_id(),
-            'steam_name': self.get_name() # so that we always have the original name
+            'steam_name': self.get_name(), # so that we always have the original name
+            'steam_data': json.dumps(self.json_data),
+            'scanned_with': kodi.get_addon_id(),
+            'scanner_version': kodi.get_addon_version()
         }
         rom.set_scanned_data(scanned_data)
         return rom
@@ -112,7 +116,7 @@ class SteamScanner(RomScannerStrategy):
 
         games = json_body['response']['games']
         num_games = len(games)
-        launcher_report.write('  Library scanner found {} games'.format(num_games))
+        launcher_report.write(f'  Library scanner found {num_games} games')
         
         self.progress_dialog.endProgress()
         return [*(SteamCandidate(g) for g in games)]
