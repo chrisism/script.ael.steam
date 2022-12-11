@@ -349,6 +349,7 @@ class SteamScraper(Scraper):
     def _parse_metadata_rating(self, online_data):
         if 'metacritic' in online_data and online_data['metacritic'] is not None:
             score = online_data['metacritic']['score']
+            score = int(score) / 100
         else:
             score = constants.DEFAULT_META_RATING
 
