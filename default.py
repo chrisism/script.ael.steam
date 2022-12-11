@@ -17,11 +17,13 @@ import xbmcaddon
 # AKL main imports
 from akl import constants, settings
 from akl.utils import kodilogging, io, kodi
+from akl.scrapers import ScraperSettings, ScrapeStrategy
 from akl.launchers import ExecutionSettings, get_executor_factory
 
 # Local modules
 from resources.lib.launcher import SteamLauncher
 from resources.lib.scanner import SteamScanner
+from resources.lib.scraper import SteamScraper
 
 kodilogging.config() 
 logger = logging.getLogger(__name__)
@@ -47,7 +49,7 @@ def run_plugin():
     for i in range(len(sys.argv)): logger.info('sys.argv[{}] "{}"'.format(i, sys.argv[i]))
     
     parser = argparse.ArgumentParser(prog='script.akl.steam')
-    parser.add_argument('--cmd', help="Command to execute", choices=['launch', 'scan', 'scrape', 'configure'])
+    parser.add_argument('--cmd', help="Command to execute", choices=['launch', 'scan', 'scrape', 'configure', 'update-settings'])
     parser.add_argument('--type',help="Plugin type", choices=['LAUNCHER', 'SCANNER', 'SCRAPER'], default=constants.AddonType.LAUNCHER.name)
     parser.add_argument('--server_host', type=str, help="Host")
     parser.add_argument('--server_port', type=int, help="Port")
@@ -63,10 +65,18 @@ def run_plugin():
         kodi.dialog_OK(text=parser.usage)
         return
     
-    if   args.type == constants.AddonType.LAUNCHER.name and args.cmd == 'launch': launch_rom(args)
-    elif args.type == constants.AddonType.LAUNCHER.name and args.cmd == 'configure': configure_launcher(args)
-    elif args.type == constants.AddonType.SCANNER.name  and args.cmd == 'scan': scan_for_roms(args)
-    elif args.type == constants.AddonType.SCANNER.name  and args.cmd == 'configure': configure_scanner(args)
+    if   args.type == constants.AddonType.LAUNCHER.name and args.cmd == 'launch':
+        launch_rom(args)
+    elif args.type == constants.AddonType.LAUNCHER.name and args.cmd == 'configure':
+        configure_launcher(args)
+    elif args.type == constants.AddonType.SCANNER.name  and args.cmd == 'scan':
+        scan_for_roms(args)
+    elif args.type == constants.AddonType.SCANNER.name  and args.cmd == 'configure':
+        configure_scanner(args)
+    elif args.type == constants.AddonType.SCRAPER.name and args.cmd == 'scrape':
+        run_scraper(args)
+    elif args.cmd == "update-settings":
+        update_plugin_settings()
     else:
         kodi.dialog_OK(text=parser.format_help())
     
@@ -81,17 +91,18 @@ def launch_rom(args):
     
     try:
         execution_settings = ExecutionSettings()
-        execution_settings.delay_tempo              = settings.getSettingAsInt('delay_tempo')
+        execution_settings.delay_tempo = settings.getSettingAsInt('delay_tempo')
         execution_settings.display_launcher_notify  = settings.getSettingAsBool('display_launcher_notify')
-        execution_settings.is_non_blocking          = settings.getSettingAsBool('is_non_blocking')
-        execution_settings.media_state_action       = settings.getSettingAsInt('media_state_action')
-        execution_settings.suspend_audio_engine     = settings.getSettingAsBool('suspend_audio_engine')
-        execution_settings.suspend_screensaver      = settings.getSettingAsBool('suspend_screensaver')
-        execution_settings.suspend_joystick_engine  = settings.getSettingAsBool('suspend_joystick')
+        execution_settings.is_non_blocking = settings.getSettingAsBool('is_non_blocking')
+        execution_settings.media_state_action = settings.getSettingAsInt('media_state_action')
+        execution_settings.suspend_audio_engine = settings.getSettingAsBool('suspend_audio_engine')
+        execution_settings.suspend_screensaver = settings.getSettingAsBool('suspend_screensaver')
+        execution_settings.suspend_joystick_engine = settings.getSettingAsBool('suspend_joystick')
                 
         addon_dir = kodi.getAddonDir()
         report_path = addon_dir.pjoin('reports')
-        if not report_path.exists(): report_path.makedirs()    
+        if not report_path.exists():
+            report_path.makedirs()    
         report_path = report_path.pjoin('{}-{}.txt'.format(args.akl_addon_id, args.rom_id))
         
         executor_factory = get_executor_factory(report_path)
@@ -183,6 +194,46 @@ def configure_scanner(args):
         return
     
     kodi.notify_warn('Cancelled configuring scanner')
+
+# ---------------------------------------------------------------------------------------------
+# Scraper methods.
+# ---------------------------------------------------------------------------------------------
+def run_scraper(args):
+    logger.debug('========== run_scraper() BEGIN ==================================================')
+    pdialog             = kodi.ProgressDialog()
+    
+    settings            = ScraperSettings.from_settings_dict(args.settings)
+    scraper_strategy    = ScrapeStrategy(
+                            args.server_host, 
+                            args.server_port, 
+                            settings, 
+                            SteamScraper(), 
+                            pdialog)
+                        
+    if args.rom_id is not None:
+        scraped_rom = scraper_strategy.process_single_rom(args.rom_id)
+        pdialog.endProgress()
+        pdialog.startProgress('Saving ROM in database ...')
+        scraper_strategy.store_scraped_rom(args.akl_addon_id, args.rom_id, scraped_rom)
+        pdialog.endProgress()
+        
+    if args.romcollection_id is not None:
+        scraped_roms = scraper_strategy.process_collection(args.romcollection_id)
+        pdialog.endProgress()
+        pdialog.startProgress('Saving ROMs in database ...')
+        scraper_strategy.store_scraped_roms(args.akl_addon_id, args.romcollection_id, scraped_roms)
+        pdialog.endProgress()
+
+# ---------------------------------------------------------------------------------------------
+# UPDATE PLUGIN
+# ---------------------------------------------------------------------------------------------
+def update_plugin_settings():
+    supported_assets = '|'.join(SteamScraper.supported_asset_list)
+    supported_metadata = '|'.join(SteamScraper.supported_metadata_list)
+    
+    settings.setSetting("akl.scraper.supported_assets", supported_assets)
+    settings.setSetting("akl.scraper.supported_metadata", supported_metadata)
+    kodi.notify("Updated AKL plugin settings for this addon")
 
 # ---------------------------------------------------------------------------------------------
 # RUN
