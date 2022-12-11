@@ -5,7 +5,6 @@ With this plugin for AKL you can scan through your Steam library and add games t
 | Release | Status |
 |----|----|
 | Stable |[![Build Status](https://dev.azure.com/jnpro/AKL/_apis/build/status/script.akl.steam?branchName=main)](https://dev.azure.com/jnpro/AKL/_build/latest?definitionId=10&branchName=main) |
-| Beta | [![Build Status](https://dev.azure.com/jnpro/AKL/_apis/build/status/script.akl.steam?branchName=release/1.1.0)](https://dev.azure.com/jnpro/AKL/_build/latest?definitionId=10&branchName=release/1.1.0) |
 | Unstable | [![Build Status](https://dev.azure.com/jnpro/AKL/_apis/build/status/script.akl.steam?branchName=dev)](https://dev.azure.com/jnpro/AKL/_build/latest?definitionId=10&branchName=dev) |
 
 ### Kodi forum thread ###
