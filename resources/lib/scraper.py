@@ -262,12 +262,13 @@ class SteamScraper(Scraper):
 
     def resolve_asset_URL_extension(self, selected_asset, image_url, status_dic):
         if selected_asset['asset_ID'] == constants.ASSET_TRAILER_ID:
-            return "url"
+            return "strm"
         return io.get_URL_extension(image_url)
 
     def download_image(self, image_url, image_local_path: io.FileName):
         if ".mp4" in image_url or ".webm" in image_url:
-            return image_url
+            image_local_path.saveStrToFile(image_url)
+            return image_local_path
         return super(SteamScraper, self).download_image(image_url, image_local_path)
 
     # --- Retrieve list of games ---
