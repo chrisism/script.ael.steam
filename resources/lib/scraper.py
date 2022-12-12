@@ -58,7 +58,6 @@ class SteamScraper(Scraper):
     # --- Constructor ----------------------------------------------------------------------------
     def __init__(self):
         self.logger = logging.getLogger(__name__)
-        self.api_key = settings.getSetting('steam-api-key')
             
         # --- Cached data ---
         self.cache_candidates = {}
@@ -97,19 +96,21 @@ class SteamScraper(Scraper):
         return True
 
     def check_before_scraping(self, status_dic):
-        if self.api_key:
-            self.logger.debug('Steam API key looks OK.')
-            return
-        self.logger.error('Steam API key not configured.')
-        self.logger.error('Disabling Steam scraper.')
-        self.scraper_disabled = True
-        status_dic['status'] = False
-        status_dic['dialog'] = kodi.KODI_MESSAGE_DIALOG
-        status_dic['msg'] = (
-            'AKL requires your Steam API key. '
-            'Visit https://steamcommunity.com/dev/apikey for directions about how to get your key '
-            'and introduce the API key in AKL addon settings.'
-        )
+        # API key is not used for scraping
+        return
+        # if self.api_key:
+        #     self.logger.debug('Steam API key looks OK.')
+        #     return
+        # self.logger.error('Steam API key not configured.')
+        # self.logger.error('Disabling Steam scraper.')
+        # self.scraper_disabled = True
+        # status_dic['status'] = False
+        # status_dic['dialog'] = kodi.KODI_MESSAGE_DIALOG
+        # status_dic['msg'] = (
+        #     'AKL requires your Steam API key. '
+        #     'Visit https://steamcommunity.com/dev/apikey for directions about how to get your key '
+        #     'and introduce the API key in AKL addon settings.'
+        # )
 
     def get_candidates(self, search_term, rom: ROMObj, platform, status_dic):
         # If the scraper is disabled return None and do not mark error in status_dic.
