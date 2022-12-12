@@ -24,13 +24,12 @@ import json
 
 # --- AKL packages ---
 from akl import report, settings, api
-from akl.utils import kodi, net
+from akl.utils import kodi, net, io
 from akl.utils.net import ContentType
 
 from akl.scanners import RomScannerStrategy, ROMCandidateABC
 
-logger = logging.getLogger(__name__)
-        
+
 class SteamCandidate(ROMCandidateABC):
     
     def __init__(self, json_data):
@@ -43,7 +42,7 @@ class SteamCandidate(ROMCandidateABC):
         scanned_data = {
             'identifier': self.get_app_id(),
             'steamid': self.get_app_id(),
-            'steam_name': self.get_name(), # so that we always have the original name
+            'steam_name': self.get_name(),
             'steam_data': json.dumps(self.json_data),
             'scanned_with': kodi.get_addon_id(),
             'scanner_version': kodi.get_addon_version()
@@ -59,15 +58,28 @@ class SteamCandidate(ROMCandidateABC):
     
     def get_name(self):
         return self.json_data['name']
-    
+
+
 class SteamScanner(RomScannerStrategy):
+
+    def __init__(self,
+                 reports_dir: io.FileName,
+                 scanner_id: str,
+                 romcollection_id: str,
+                 webservice_host: str,
+                 webservice_port: int,
+                 progress_dialog: kodi.ProgressDialog):
+        self.logger = logging.getLogger(__name__)
+        super(SteamScanner, self).__init__(reports_dir, scanner_id, romcollection_id,
+                                           webservice_host, webservice_port, progress_dialog)
     
     # --------------------------------------------------------------------------------------------
     # Core methods
     # --------------------------------------------------------------------------------------------
-    def get_name(self) -> str: return 'Steam Library scanner'
+    def get_name(self) -> str:
+        return 'Steam Library scanner'
     
-    def get_scanner_addon_id(self) -> str: 
+    def get_scanner_addon_id(self) -> str:
         addon_id = kodi.get_addon_id()
         return addon_id
     
@@ -75,7 +87,7 @@ class SteamScanner(RomScannerStrategy):
         return self.scanner_settings['steamid'] if 'steamid' in self.scanner_settings else None
     
     def _configure_get_wizard(self, wizard) -> kodi.WizardDialog:
-        wizard = kodi.WizardDialog_Keyboard(wizard, 'steamid','Steam account ID')        
+        wizard = kodi.WizardDialog_Keyboard(wizard, 'steamid', 'Steam account ID')
         return wizard
       
     def _configure_post_wizard_hook(self):
@@ -89,13 +101,13 @@ class SteamScanner(RomScannerStrategy):
     def _change_steam_id(self):
         steamid = self.scanner_settings['steamid']
         steamid = kodi.dialog_keyboard('Edit Steam account ID', text=steamid)
-
-        if steamid is None: return
+        if steamid is None:
+            return
         self.scanner_settings['steamid'] = steamid
 
     # ---------------------------------------------------------------------------------------------
     # Execution methods
-    # ---------------------------------------------------------------------------------------------         
+    # ---------------------------------------------------------------------------------------------
     # ~~~ Scan for new files (*.*) and put them in a list ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def _getCandidates(self, launcher_report: report.Reporter) -> typing.List[ROMCandidateABC]:
         self.progress_dialog.startProgress('Reading Steam account...')
@@ -110,7 +122,7 @@ class SteamScanner(RomScannerStrategy):
         self.progress_dialog.updateProgress(80)
         
         if http_code != 200:
-            logger.warning("Failure while retrieving json web data")
+            self.logger.warning("Failure while retrieving json web data")
             kodi.notify_warn("Failure retrieving web data")
             return []
 
@@ -122,26 +134,26 @@ class SteamScanner(RomScannerStrategy):
         return [*(SteamCandidate(g) for g in games)]
     
     # --- Get dead entries -----------------------------------------------------------------
-    def _getDeadRoms(self, candidates:typing.List[ROMCandidateABC], roms: typing.List[api.ROMObj]) -> typing.List[api.ROMObj]:
+    def _getDeadRoms(self, candidates: typing.List[ROMCandidateABC], roms: typing.List[api.ROMObj]) -> typing.List[api.ROMObj]:
         dead_roms = []
         num_roms = len(roms)
         if num_roms == 0:
-            logger.info('Collection is empty. No dead ROM check.')
+            self.logger.info('Collection is empty. No dead ROM check.')
             return dead_roms
         
-        logger.info('Starting dead items scan')
+        self.logger.info('Starting dead items scan')
         i = 0
             
         self.progress_dialog.startProgress('Checking for dead ROMs ...', num_roms)
         
-        candidate_steam_ids = set(c.get_app_id() for c in candidates) 
+        candidate_steam_ids = set(c.get_app_id() for c in candidates)
         for rom in reversed(roms):
             steam_id = rom.get_scanned_data_element('steamid')
-            logger.info('Searching ID#{}'.format(steam_id))
+            self.logger.info('Searching ID#{}'.format(steam_id))
             self.progress_dialog.updateProgress(i)
             
             if steam_id not in candidate_steam_ids:
-                logger.info('Not found. Marking as dead: #{} {}'.format(steam_id, rom.get_name()))
+                self.logger.info('Not found. Marking as dead: #{} {}'.format(steam_id, rom.get_name()))
                 roms.remove(rom)
                 dead_roms.append(rom)
             i += 1
@@ -150,16 +162,16 @@ class SteamScanner(RomScannerStrategy):
         return dead_roms
 
     # ~~~ Now go processing item by item ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    def _processFoundItems(self, 
-                           candidates: typing.List[ROMCandidateABC], 
-                           roms:typing.List[api.ROMObj],
+    def _processFoundItems(self,
+                           candidates: typing.List[ROMCandidateABC],
+                           roms: typing.List[api.ROMObj],
                            launcher_report: report.Reporter) -> typing.List[api.ROMObj]:
 
-        num_items = len(candidates)    
-        new_roms:typing.List[api.ROMObj] = []
+        num_items = len(candidates)
+        new_roms: typing.List[api.ROMObj] = []
 
         self.progress_dialog.startProgress('Scanning found items', num_items)
-        logger.debug('============================== Processing Steam Games ==============================')
+        self.logger.debug('============================== Processing Steam Games ==============================')
         launcher_report.write('Processing games ...')
         num_items_checked = 0
         
@@ -167,22 +179,22 @@ class SteamScanner(RomScannerStrategy):
 
         for candidate in sorted(candidates, key=lambda c: c.get_sort_value()):
             
-            steam_candidate:SteamCandidate = candidate
+            steam_candidate: SteamCandidate = candidate
             steamId = steam_candidate.get_app_id()
             
-            logger.debug('Searching {} with #{}'.format(steam_candidate.get_name(), steamId))
+            self.logger.debug('Searching {} with #{}'.format(steam_candidate.get_name(), steamId))
             self.progress_dialog.updateProgress(num_items_checked, steam_candidate.get_name())
             
             if steamId in steamIdsAlreadyInCollection:
-                logger.debug('  ID#{} already in collection. Skipping'.format(steamId))
+                self.logger.debug('  ID#{} already in collection. Skipping'.format(steamId))
                 num_items_checked += 1
                 continue
             
-            logger.debug('========== Processing Steam game ==========')
+            self.logger.debug('========== Processing Steam game ==========')
             launcher_report.write('>>> title: {}'.format(steam_candidate.get_name()))
             launcher_report.write('>>> ID: {}'.format(steam_candidate.get_app_id()))
         
-            logger.debug('Not found. Item {} is new'.format(steam_candidate.get_name()))
+            self.logger.debug('Not found. Item {} is new'.format(steam_candidate.get_name()))
 
             # ~~~~~ Process new ROM and add to the list ~~~~~
             new_rom = steam_candidate.get_ROM()
@@ -192,12 +204,10 @@ class SteamScanner(RomScannerStrategy):
             if self.progress_dialog.isCanceled():
                 self.progress_dialog.endProgress()
                 kodi.dialog_OK('Stopping ROM scanning. No changes have been made.')
-                logger.info('User pressed Cancel button when scanning ROMs. ROM scanning stopped.')
+                self.logger.info('User pressed Cancel button when scanning ROMs. ROM scanning stopped.')
                 return None
             
             num_items_checked += 1
            
         self.progress_dialog.endProgress()
         return new_roms
-
-             

@@ -75,7 +75,10 @@ stages:
           artifactFeeds: AKL/akl_libs
 
       - bash: |
+          python -m venv .venv
+          source .venv/bin/activate
           python -m pip install --upgrade pip
+          pip install packaging==21.3
           pip install -r requirements.txt
         displayName: pip install 
 
@@ -86,14 +89,24 @@ stages:
           RegEx: 'version="\d+\.\d+\.\d+.*" provider'
           ValueToReplace: 'version="$(addonVersion)" provider'
 
-      - bash: update_addon_news $(workingDirectory)/addon.xml $(workingDirectory)/changelog.md
+      - bash: |
+          source .venv/bin/activate
+          update_addon_news $(workingDirectory)/addon.xml $(workingDirectory)/changelog.md
         displayName: 'Add changelog in addon.xml'
         workingDirectory: '$(workingDirectory)'
 
-      - bash: 'python -m pytest --junitxml=$(build.artifactstagingdirectory)/$(addonName)_$(addonVersion)_testresults.xml' 
+      - bash: |
+          source .venv/bin/activate
+          pytest --junitxml=$(build.artifactstagingdirectory)/$(addonName)_$(addonVersion)_testresults.xml 
         workingDirectory: '$(workingDirectory)'
         displayName: 'Run tests'
-              
+
+      - script: |
+          source .venv/bin/activate
+          python -m flake8 .
+        workingDirectory: '$(workingDirectory)'
+        displayName: 'Run lint tests'
+                      
       - task: CopyFiles@2
         displayName: 'Copy addon files for package'
         inputs:
@@ -119,7 +132,13 @@ stages:
           archiveType: 'zip'
           archiveFile: '$(build.artifactstagingdirectory)/package/$(addonName)-$(addonVersion).zip'
           replaceExistingArchive: true
- 
+  
+      - bash: |
+          source .venv/bin/activate
+          kodi-addon-checker --branch matrix $(build.artifactstagingdirectory)/$(addonName)/
+        workingDirectory: '$(workingDirectory)'
+        displayName: 'Run Kodi addon checker'
+
       - task: CopyFiles@2
         displayName: 'Copy addon files for repository'
         inputs:

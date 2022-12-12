@@ -199,15 +199,15 @@ class SteamScraper(Scraper):
         assets_list = []
         if asset_info_id == constants.ASSET_TRAILER_ID:
             if 'movies' not in online_data:
-                return assets_list        
+                return assets_list
             if len(online_data['movies']) == 0:
                 return assets_list
 
             for movie in online_data['movies']:
-                url = ''   
+                url = ''
                 if 'mp4' in movie:
                     url = movie['mp4']['max']
-                elif 'webm' in movie: 
+                elif 'webm' in movie:
                     url = movie['webm']['max']
 
                 asset_data = self._new_assetdata_dic()
@@ -219,7 +219,7 @@ class SteamScraper(Scraper):
 
         if asset_info_id == constants.ASSET_SNAP_ID:
             if 'screenshots' not in online_data:
-                return assets_list        
+                return assets_list
             if len(online_data['screenshots']) == 0:
                 return assets_list
 
@@ -233,7 +233,7 @@ class SteamScraper(Scraper):
 
         if asset_info_id == constants.ASSET_BANNER_ID:
             if 'header_image' not in online_data:
-                return assets_list        
+                return assets_list
             asset_data = self._new_assetdata_dic()
             asset_data['asset_ID'] = asset_info_id
             asset_data['display_name'] = "Header image"
@@ -243,7 +243,7 @@ class SteamScraper(Scraper):
 
         if asset_info_id == constants.ASSET_FANART_ID:
             if 'background_raw' not in online_data:
-                return assets_list        
+                return assets_list
             asset_data = self._new_assetdata_dic()
             asset_data['asset_ID'] = asset_info_id
             asset_data['display_name'] = "Background image"
@@ -317,9 +317,8 @@ class SteamScraper(Scraper):
         return title_str
 
     def _parse_metadata_year(self, online_data):
-        if 'release_date' in online_data and \
-            'date' in online_data['release_date'] and \
-            online_data['release_date']['date'] is not None:
+        if 'release_date' in online_data and 'date' in online_data['release_date'] and \
+                online_data['release_date']['date'] is not None:
             year_str = online_data['release_date']['date'][-4]
         else:
             year_str = constants.DEFAULT_META_YEAR
@@ -408,7 +407,7 @@ class SteamScraper(Scraper):
     # Retrieve URL and decode JSON object.
     #
     # * When the URL is called too often, we apply a timeout
-    def _retrieve_URL_as_JSON(self, url, status_dic, retry = 1):
+    def _retrieve_URL_as_JSON(self, url, status_dic, retry=1):
         if self.call_count > 4:
             self._wait_for_API_request(1000)
             self.call_count = 0
@@ -430,7 +429,7 @@ class SteamScraper(Scraper):
 
                 self.logger.warning(f"Steam Too many requests: {json_data}")
                 kodi.notify(f"Too many requests. Waiting {5*retry} seconds.")
-                self._wait_for_API_request(5000*retry)
+                self._wait_for_API_request(5000 * retry)
                 retry += 1
                 return self._retrieve_URL_as_JSON(url, status_dic, retry)
 
@@ -445,4 +444,3 @@ class SteamScraper(Scraper):
             return None
 
         return json_data
-        
