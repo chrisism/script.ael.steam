@@ -38,21 +38,14 @@ addon_version = addon.getAddonInfo('version')
 # This is the plugin entry point.
 # ---------------------------------------------------------------------------------------------
 def run_plugin():
+    os_name = io.is_which_os()
+    
     # --- Some debug stuff for development ---
     logger.info('------------ Called Advanced Kodi Launcher Plugin: Steam Library ------------')
     logger.info('addon.id         "{}"'.format(addon_id))
     logger.info('addon.version    "{}"'.format(addon_version))
     logger.info('sys.platform     "{}"'.format(sys.platform))
-    if io.is_android():
-        logger.info('OS               "Android"')
-    if io.is_windows():
-        logger.info('OS               "Windows"')
-    if io.is_osx():
-        logger.info('OS               "OSX"')
-    if io.is_linux():
-        logger.info('OS               "Linux"')
-    for i in range(len(sys.argv)):
-        logger.info('sys.argv[{}] "{}"'.format(i, sys.argv[i]))
+    logger.info(f'OS              "{os_name}"')
     
     parser = argparse.ArgumentParser(prog='script.akl.steam')
     parser.add_argument('--cmd', help="Command to execute", choices=['launch', 'scan', 'scrape', 'configure', 'update-settings'])
@@ -61,6 +54,9 @@ def run_plugin():
     parser.add_argument('--server_port', type=int, help="Port")
     parser.add_argument('--rom_id', type=str, help="ROM ID")
     parser.add_argument('--romcollection_id', type=str, help="ROM Collection ID")
+    parser.add_argument('--source_id', type=str, help="Source ID")
+    parser.add_argument('--entity_id', type=str, help="Entity ID")
+    parser.add_argument('--entity_type', type=str, help="Entity Type (ROM|ROMCOLLECTION|SOURCE)")
     parser.add_argument('--akl_addon_id', type=str, help="Addon configuration ID")
     parser.add_argument('--settings', type=json.loads, help="Specific run setting")
     
@@ -110,12 +106,11 @@ def launch_rom(args):
         report_path = addon_dir.pjoin('reports')
         if not report_path.exists():
             report_path.makedirs()
-        report_path = report_path.pjoin('{}-{}.txt'.format(args.akl_addon_id, args.rom_id))
+        report_path = report_path.pjoin(f'{args.akl_addon_id}-{args.rom_id}.txt')
         
         executor_factory = get_executor_factory(report_path)
         launcher = SteamLauncher(
             args.akl_addon_id,
-            args.romcollection_id,
             args.rom_id,
             args.server_host,
             args.server_port,
@@ -128,13 +123,12 @@ def launch_rom(args):
         kodi.notify_error('Failed to execute ROM')
 
 
-# Arguments: --akl_addon_id --romcollection_id | --rom_id
+# Arguments: --akl_addon_id --rom_id
 def configure_launcher(args):
     logger.debug('Steam Library Launcher: Configuring ...')
         
     launcher = SteamLauncher(
         args.akl_addon_id,
-        args.romcollection_id,
         args.rom_id,
         args.server_host,
         args.server_port)
@@ -194,7 +188,7 @@ def configure_scanner(args):
     scanner = SteamScanner(
         report_path,
         args.akl_addon_id,
-        args.romcollection_id,
+        args.source_id if args.source_id else args.romcollection_id,
         args.server_host,
         args.server_port,
         kodi.ProgressDialog())
@@ -221,18 +215,17 @@ def run_scraper(args):
         SteamScraper(),
         pdialog)
                         
-    if args.rom_id is not None:
-        scraped_rom = scraper_strategy.process_single_rom(args.rom_id)
+    if args.entity_type == constants.OBJ_ROM:
+        scraped_rom = scraper_strategy.process_single_rom(args.entity_id)
         pdialog.endProgress()
         pdialog.startProgress('Saving ROM in database ...')
-        scraper_strategy.store_scraped_rom(args.akl_addon_id, args.rom_id, scraped_rom)
+        scraper_strategy.store_scraped_rom(args.akl_addon_id, args.entity_id, scraped_rom)
         pdialog.endProgress()
-        
-    if args.romcollection_id is not None:
-        scraped_roms = scraper_strategy.process_collection(args.romcollection_id)
+    else:
+        scraped_roms = scraper_strategy.process_roms(args.entity_type, args.entity_id)
         pdialog.endProgress()
         pdialog.startProgress('Saving ROMs in database ...')
-        scraper_strategy.store_scraped_roms(args.akl_addon_id, args.romcollection_id, scraped_roms)
+        scraper_strategy.store_scraped_roms(args.akl_addon_id, args.entity_type, args.entity_id, scraped_roms)
         pdialog.endProgress()
 
 

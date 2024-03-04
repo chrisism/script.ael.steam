@@ -44,7 +44,7 @@ class SteamCandidate(ROMCandidateABC):
             'steamid': self.get_app_id(),
             'steam_name': self.get_name(),
             'steam_data': json.dumps(self.json_data),
-            'scanned_with': kodi.get_addon_id(),
+            'scanner': kodi.get_addon_id(),
             'scanner_version': kodi.get_addon_version()
         }
         rom.set_scanned_data(scanned_data)
@@ -64,14 +64,13 @@ class SteamScanner(RomScannerStrategy):
 
     def __init__(self,
                  reports_dir: io.FileName,
-                 scanner_id: str,
-                 romcollection_id: str,
+                 source_id: str,
                  webservice_host: str,
                  webservice_port: int,
                  progress_dialog: kodi.ProgressDialog):
         self.logger = logging.getLogger(__name__)
-        super(SteamScanner, self).__init__(reports_dir, scanner_id, romcollection_id,
-                                           webservice_host, webservice_port, progress_dialog)
+        super(SteamScanner, self).__init__(reports_dir, source_id, webservice_host, webservice_port,
+                                           progress_dialog)
     
     # --------------------------------------------------------------------------------------------
     # Core methods
@@ -138,7 +137,7 @@ class SteamScanner(RomScannerStrategy):
         dead_roms = []
         num_roms = len(roms)
         if num_roms == 0:
-            self.logger.info('Collection is empty. No dead ROM check.')
+            self.logger.info('Source is empty. No dead ROM check.')
             return dead_roms
         
         self.logger.info('Starting dead items scan')
@@ -175,7 +174,7 @@ class SteamScanner(RomScannerStrategy):
         launcher_report.write('Processing games ...')
         num_items_checked = 0
         
-        steamIdsAlreadyInCollection = set(rom.get_scanned_data_element('steamid') for rom in roms)
+        steamIdsAlreadyInSource = set(rom.get_scanned_data_element('steamid') for rom in roms)
 
         for candidate in sorted(candidates, key=lambda c: c.get_sort_value()):
             
@@ -185,8 +184,8 @@ class SteamScanner(RomScannerStrategy):
             self.logger.debug('Searching {} with #{}'.format(steam_candidate.get_name(), steamId))
             self.progress_dialog.updateProgress(num_items_checked, steam_candidate.get_name())
             
-            if steamId in steamIdsAlreadyInCollection:
-                self.logger.debug('  ID#{} already in collection. Skipping'.format(steamId))
+            if steamId in steamIdsAlreadyInSource:
+                self.logger.debug('  ID#{} already in source. Skipping'.format(steamId))
                 num_items_checked += 1
                 continue
             

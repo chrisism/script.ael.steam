@@ -32,14 +32,13 @@ class SteamLauncher(LauncherABC):
 
     def __init__(self,
                  launcher_id: str,
-                 romcollection_id: str,
                  rom_id: str,
                  webservice_host: str,
                  webservice_port: int,
                  executorFactory: ExecutorFactoryABC = None,
                  execution_settings: ExecutionSettings = None):
         self.logger = logging.getLogger(__name__)
-        super(SteamLauncher, self).__init__(launcher_id, romcollection_id, rom_id, webservice_host, webservice_port,
+        super(SteamLauncher, self).__init__(launcher_id, rom_id, webservice_host, webservice_port,
                                             executorFactory, execution_settings)
         
     # --------------------------------------------------------------------------------------------
