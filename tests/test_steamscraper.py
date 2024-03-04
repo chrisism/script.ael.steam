@@ -19,7 +19,7 @@ from akl import constants
 from akl.utils import net
         
 def read_file(path):
-    with open(path, 'r') as f:
+    with open(path, 'r', encoding='utf-8') as f:
         return f.read()
     
 def read_file_as_json(path):
