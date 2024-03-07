@@ -11,7 +11,7 @@
     <summary lang="en_GB">Steam scanner, scraper and launcher for AKL plugin.</summary>
     <description lang="en_GB">
     This module can be used as a scanner, scraper and launcher plugin for AKL. It can scan and launch games from your 
-Steam library. It can scrape games available on Steam.
+Steam library. It can scrape assets for games available on Steam.
     </description>
     <platform>all</platform>
     <license>GNU General Public License version 2</license>
