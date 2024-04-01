@@ -64,14 +64,14 @@ class SteamScanner(RomScannerStrategy):
 
     def __init__(self,
                  reports_dir: io.FileName,
-                 scanner_id: str,
-                 romcollection_id: str,
+                 source_id: str,
                  webservice_host: str,
                  webservice_port: int,
                  progress_dialog: kodi.ProgressDialog):
         self.logger = logging.getLogger(__name__)
-        super(SteamScanner, self).__init__(reports_dir, scanner_id, romcollection_id,
-                                           webservice_host, webservice_port, progress_dialog)
+        super(SteamScanner, self).__init__(reports_dir, source_id,
+                                           webservice_host, webservice_port,
+                                           progress_dialog)
     
     # --------------------------------------------------------------------------------------------
     # Core methods
@@ -194,7 +194,7 @@ class SteamScanner(RomScannerStrategy):
             launcher_report.write('>>> title: {}'.format(steam_candidate.get_name()))
             launcher_report.write('>>> ID: {}'.format(steam_candidate.get_app_id()))
         
-            self.logger.debug('Not found. Item {} is new'.format(steam_candidate.get_name()))
+            self.logger.debug(f'Not found. Item {steam_candidate.get_name()} is new')
 
             # ~~~~~ Process new ROM and add to the list ~~~~~
             new_rom = steam_candidate.get_ROM()
