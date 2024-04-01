@@ -32,12 +32,12 @@ class Test_SteamScanner(unittest.TestCase):
         cls.TEST_ASSETS_DIR = os.path.abspath(os.path.join(cls.TEST_DIR,'assets/'))
     
     @patch('akl.api.client_get_roms_in_collection')
-    @patch('akl.api.client_get_collection_scanner_settings')
+    @patch('akl.api.client_get_source_scanner_settings')
     @patch('resources.lib.scanner.net.get_URL') 
     def test_when_scanning_your_steam_account_not_existing_dead_roms_will_be_correctly_removed(self, 
             mock_urlopen:MagicMock, api_settings_mock:MagicMock, api_roms_mock:MagicMock):
         # arrange
-        scanner_id = random_string(5)
+        source_id = random_string(5)
         mock_urlopen.return_value = json.loads(read_file(self.TEST_ASSETS_DIR + "/steamresponse.json")), 200
 
         api_settings_mock.return_value = {
@@ -46,17 +46,17 @@ class Test_SteamScanner(unittest.TestCase):
         }               
         
         roms = []
-        roms.append(ROMObj({'id': '1', 'scanned_by_id': scanner_id, 'm_name': 'this-one-will-be-deleted', 'steamid': 99999}))
-        roms.append(ROMObj({'id': '2', 'scanned_by_id': scanner_id, 'm_name': 'this-one-will-be-deleted-too', 'steamid': 777888444}))
-        roms.append(ROMObj({'id': '3', 'scanned_by_id': scanner_id, 'm_name': 'Rocket League', 'steamid': 252950}))
-        roms.append(ROMObj({'id': '4', 'scanned_by_id': scanner_id, 'm_name': 'this-one-will-be-deleted-again', 'steamid': 663434}))             
+        roms.append(ROMObj({'id': '1', 'scanned_by_id': source_id, 'm_name': 'this-one-will-be-deleted', 'steamid': 99999}))
+        roms.append(ROMObj({'id': '2', 'scanned_by_id': source_id, 'm_name': 'this-one-will-be-deleted-too', 'steamid': 777888444}))
+        roms.append(ROMObj({'id': '3', 'scanned_by_id': source_id, 'm_name': 'Rocket League', 'steamid': 252950}))
+        roms.append(ROMObj({'id': '4', 'scanned_by_id': source_id, 'm_name': 'this-one-will-be-deleted-again', 'steamid': 663434}))             
         api_roms_mock.return_value = roms
 
         report_dir = FakeFile('//fake_reports/')
         expected = 5
 
         # act
-        target = SteamScanner(report_dir, scanner_id, random_string(10), None, 0, FakeProgressDialog())
+        target = SteamScanner(report_dir, source_id, None, 0, FakeProgressDialog())
         target.scan()
         
         actual = target.amount_of_scanned_roms()

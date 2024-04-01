@@ -126,7 +126,7 @@ def launch_rom(args):
         kodi.notify_error('Failed to execute ROM')
 
 
-# Arguments: --akl_addon_id --romcollection_id | --rom_id
+# Arguments: --akl_addon_id --rom_id
 def configure_launcher(args):
     logger.debug('Steam Library Launcher: Configuring ...')
         
