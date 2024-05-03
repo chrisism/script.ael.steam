@@ -20,21 +20,34 @@ import logging
 
 # --- AKL packages ---
 from akl.utils import kodi
-from akl.launchers import LauncherABC
+from akl.launchers import LauncherABC, ExecutorFactoryABC, ExecutionSettings
 
 logger = logging.getLogger(__name__)
+
 
 # -------------------------------------------------------------------------------------------------
 # Launcher to use with a local Steam application and account.
 # -------------------------------------------------------------------------------------------------
 class SteamLauncher(LauncherABC):
 
+    def __init__(self,
+                 launcher_id: str,
+                 rom_id: str,
+                 webservice_host: str,
+                 webservice_port: int,
+                 executorFactory: ExecutorFactoryABC = None,
+                 execution_settings: ExecutionSettings = None):
+        self.logger = logging.getLogger(__name__)
+        super(SteamLauncher, self).__init__(launcher_id, rom_id, webservice_host, webservice_port,
+                                            executorFactory, execution_settings)
+        
     # --------------------------------------------------------------------------------------------
     # Core methods
     # --------------------------------------------------------------------------------------------
-    def get_name(self) -> str: return 'Steam Launcher'
+    def get_name(self) -> str:
+        return 'Steam Launcher'
      
-    def get_launcher_addon_id(self) -> str: 
+    def get_launcher_addon_id(self) -> str:
         addon_id = kodi.get_addon_id()
         return addon_id
 
@@ -44,12 +57,12 @@ class SteamLauncher(LauncherABC):
     #
     # Creates a new launcher using a wizard of dialogs. Called by parent build() method.
     #
-    def _builder_get_wizard(self, wizard):    
+    def _builder_get_wizard(self, wizard):
         wizard = kodi.WizardDialog_Dummy(wizard, 'application', 'Steam')
         return wizard
     
     def _editor_get_wizard(self, wizard):
-        wizard = kodi.WizardDialog_Dummy(wizard, 'application', 'Steam')   
+        wizard = kodi.WizardDialog_Dummy(wizard, 'application', 'Steam')
         return wizard
             
     def _build_post_wizard_hook(self):
@@ -65,7 +78,7 @@ class SteamLauncher(LauncherABC):
         return 'steam://rungameid/'
         
     def get_arguments(self) -> str:
-        arguments =  '$steamid$'    
+        arguments = '$steamid$'
         original_arguments = self.launcher_settings['args'] if 'args' in self.launcher_settings else ''
         self.launcher_settings['args'] = '{} {}'.format(arguments, original_arguments)
         return super(SteamLauncher, self).get_arguments()
